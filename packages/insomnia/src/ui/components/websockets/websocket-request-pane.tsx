@@ -199,13 +199,14 @@ const WebSocketRequestForm: FC<FormProps> = ({
 
 interface Props {
   environment: Environment | null;
+  eventEmitter: ConstrainedEmitter;
 }
 
 // requestId is something we can read from the router params in the future.
 // essentially we can lift up the states and merge request pane and response pane into a single page and divide the UI there.
 // currently this is blocked by the way page layout divide the panes with dragging functionality
 // TODO: @gatzjames discuss above assertion in light of request and settings drills
-export const WebSocketRequestPane: FC<Props> = ({ environment }) => {
+export const WebSocketRequestPane: FC<Props> = ({ environment, eventEmitter }) => {
   const { activeRequest, activeRequestMeta } = useRouteLoaderData('request/:requestId') as WebSocketRequestLoaderData;
 
   const { workspaceId, requestId } = useParams() as { organizationId: string; projectId: string; workspaceId: string; requestId: string };
@@ -214,6 +215,7 @@ export const WebSocketRequestPane: FC<Props> = ({ environment }) => {
     settings,
   } = useRootLoaderData();
   const { useBulkParametersEditor } = settings;
+  // const { hotKeyRegistry } = settings;
 
   const disabled = readyState;
 
@@ -258,6 +260,18 @@ export const WebSocketRequestPane: FC<Props> = ({ environment }) => {
   const patchRequest = useRequestPatcher();
   // Reset the response pane state when we switch requests, the environment gets modified, or the (Git|Sync)VCS version changes
   const uniqueKey = `${environment?.modified}::${requestId}::${gitVersion}::${activeRequestSyncVersion}::${activeRequestMeta.activeResponseId}`;
+
+  // const keyboardEventHandler = createConstrainedKeyBindingsHandler(hotKeyRegistry, 'request_send', handleRequestSend, eventEmitter.shouldTrigger);
+  // useEffect(() => {
+  //   if (!eventEmitter || !eventEmitter.emitter.current) {
+  //     return;
+  //   }
+
+  //   eventEmitter.emitter.current.addEventListener('keydown', keyboardEventHandler, { capture: true });
+  //   return () => {
+  //     window.removeEventListener('keydown', keyboardEventHandler, { capture: true });
+  //   };
+  // }, [eventEmitter, keyboardEventHandler]);
 
   return (
     <Pane type="request">

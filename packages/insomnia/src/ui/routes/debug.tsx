@@ -60,6 +60,7 @@ import { WorkspaceSyncDropdown } from '../components/dropdowns/workspace-sync-dr
 import { ErrorBoundary } from '../components/error-boundary';
 import { Icon } from '../components/icon';
 import { useDocBodyKeyboardShortcuts } from '../components/keydown-binder';
+import { ConstrainedEmitter } from '../components/keydown-binder';
 import { showModal, showPrompt } from '../components/modals';
 import { AskModal } from '../components/modals/ask-modal';
 import { CookiesModal } from '../components/modals/cookies-modal';
@@ -633,7 +634,7 @@ export const Debug: FC = () => {
     return event.composedPath().includes(requestPaneRef.current);
   }, [requestPaneRef]);
 
-  const eventEmitter: {emitter: React.RefObject<HTMLElement>, shouldTrigger: (event: KeyboardEvent | null) => boolean} = {
+  const eventEmitter: ConstrainedEmitter = {
     emitter: requestPaneRef,
     shouldTrigger,
   };
@@ -1114,10 +1115,11 @@ export const Debug: FC = () => {
                 grpcState={grpcState}
                 setGrpcState={setGrpcState}
                 reloadRequests={reloadRequests}
+                eventEmitter={eventEmitter}
               />
             )}
             {isWebSocketRequestId(requestId) && (
-              <WebSocketRequestPane environment={activeEnvironment} />
+              <WebSocketRequestPane environment={activeEnvironment} eventEmitter={eventEmitter} />
             )}
             {isRequestId(requestId) && (
               <RequestPane
