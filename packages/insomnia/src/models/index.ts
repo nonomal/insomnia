@@ -3,10 +3,13 @@ import {
   EXPORT_TYPE_COOKIE_JAR,
   EXPORT_TYPE_ENVIRONMENT,
   EXPORT_TYPE_GRPC_REQUEST,
+  EXPORT_TYPE_MOCK_ROUTE,
+  EXPORT_TYPE_MOCK_SERVER,
   EXPORT_TYPE_PROTO_DIRECTORY,
   EXPORT_TYPE_PROTO_FILE,
   EXPORT_TYPE_REQUEST,
   EXPORT_TYPE_REQUEST_GROUP,
+  EXPORT_TYPE_RUNNER_TEST_RESULT,
   EXPORT_TYPE_UNIT_TEST,
   EXPORT_TYPE_UNIT_TEST_SUITE,
   EXPORT_TYPE_WEBSOCKET_PAYLOAD,
@@ -22,6 +25,8 @@ import * as _environment from './environment';
 import * as _gitRepository from './git-repository';
 import * as _grpcRequest from './grpc-request';
 import * as _grpcRequestMeta from './grpc-request-meta';
+import * as _mockRoute from './mock-route';
+import * as _mockServer from './mock-server';
 import * as _oAuth2Token from './o-auth-2-token';
 import * as _pluginData from './plugin-data';
 import * as _project from './project';
@@ -33,11 +38,13 @@ import * as _requestGroupMeta from './request-group-meta';
 import * as _requestMeta from './request-meta';
 import * as _requestVersion from './request-version';
 import * as _response from './response';
+import * as _runnerTestResult from './runner-test-result';
 import * as _settings from './settings';
 import * as _stats from './stats';
 import * as _unitTest from './unit-test';
 import * as _unitTestResult from './unit-test-result';
 import * as _unitTestSuite from './unit-test-suite';
+import * as _userSession from './user-session';
 import * as _webSocketPayload from './websocket-payload';
 import * as _webSocketRequest from './websocket-request';
 import * as _webSocketResponse from './websocket-response';
@@ -64,6 +71,8 @@ export const caCertificate = _caCertificate;
 export const cookieJar = _cookieJar;
 export const environment = _environment;
 export const gitRepository = _gitRepository;
+export const mockServer = _mockServer;
+export const mockRoute = _mockRoute;
 export const oAuth2Token = _oAuth2Token;
 export const pluginData = _pluginData;
 export const request = _request;
@@ -71,6 +80,7 @@ export const requestGroup = _requestGroup;
 export const requestGroupMeta = _requestGroupMeta;
 export const requestMeta = _requestMeta;
 export const requestVersion = _requestVersion;
+export const runnerTestResult = _runnerTestResult;
 export const response = _response;
 export const settings = _settings;
 export const project = _project;
@@ -88,6 +98,7 @@ export const webSocketResponse = _webSocketResponse;
 export const workspace = _workspace;
 export const workspaceMeta = _workspaceMeta;
 export * as organization from './organization';
+export const userSession = _userSession;
 
 export function all() {
   // NOTE: This list should be from most to least specific (ie. parents above children)
@@ -109,6 +120,8 @@ export function all() {
     requestVersion,
     requestMeta,
     response,
+    mockServer,
+    mockRoute,
     oAuth2Token,
     caCertificate,
     clientCertificate,
@@ -120,9 +133,11 @@ export function all() {
     protoDirectory,
     grpcRequest,
     grpcRequestMeta,
+    runnerTestResult,
     webSocketPayload,
     webSocketRequest,
     webSocketResponse,
+    userSession,
   ] as const;
 }
 
@@ -195,9 +210,12 @@ export async function initModel<T extends BaseModel>(type: string, ...sources: R
   // Migrate the model
   // NOTE: Do migration before pruning because we might need to look at those fields
   const migratedDoc = model.migrate(fullObject);
+  // optional keys do not generated in init method but should allow update.
+  // If we put those keys in init method, all related models will show as modified in git sync.
+  const modelOptionalKeys: string[] = 'optionalKeys' in model ? model.optionalKeys || [] : [];
   // Prune extra keys from doc
   for (const key of Object.keys(migratedDoc)) {
-    if (!objectDefaults.hasOwnProperty(key)) {
+    if (!objectDefaults.hasOwnProperty(key) && !modelOptionalKeys.includes(key)) {
       // @ts-expect-error -- mapping unsoundness
       delete migratedDoc[key];
     }
@@ -211,7 +229,10 @@ export const MODELS_BY_EXPORT_TYPE: Record<string, any> = {
   [EXPORT_TYPE_REQUEST]: request,
   [EXPORT_TYPE_WEBSOCKET_PAYLOAD]: webSocketPayload,
   [EXPORT_TYPE_WEBSOCKET_REQUEST]: webSocketRequest,
+  [EXPORT_TYPE_MOCK_SERVER]: mockServer,
+  [EXPORT_TYPE_MOCK_ROUTE]: mockRoute,
   [EXPORT_TYPE_GRPC_REQUEST]: grpcRequest,
+  [EXPORT_TYPE_RUNNER_TEST_RESULT]: runnerTestResult,
   [EXPORT_TYPE_REQUEST_GROUP]: requestGroup,
   [EXPORT_TYPE_UNIT_TEST_SUITE]: unitTestSuite,
   [EXPORT_TYPE_UNIT_TEST]: unitTest,

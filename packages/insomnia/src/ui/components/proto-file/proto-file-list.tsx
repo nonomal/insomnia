@@ -1,7 +1,7 @@
-import React, { FunctionComponent } from 'react';
-import styled from 'styled-components';
+import React, { type FunctionComponent } from 'react';
+import { Checkbox } from 'react-aria-components';
 
-import { ProtoDirectory } from '../../../models/proto-directory';
+import type { ProtoDirectory } from '../../../models/proto-directory';
 import type { ProtoFile } from '../../../models/proto-file';
 import { Button } from '../themed-button';
 
@@ -10,15 +10,6 @@ export type DeleteProtoFileHandler = (protofile: ProtoFile) => void;
 export type DeleteProtoDirectoryHandler = (protoDirectory: ProtoDirectory) => void;
 export type UpdateProtoFileHandler = (protofile: ProtoFile) => Promise<void>;
 export type RenameProtoFileHandler = (protoFile: ProtoFile, name?: string) => Promise<void>;
-export const ProtoListItem = styled('li').attrs(() => ({
-  className: 'row-spaced',
-}))`
-  button i.fa {
-    font-size: var(--font-size-lg);
-  }
-
-  height: var(--line-height-sm);
-`;
 
 export interface ExpandedProtoDirectory {
   files: ProtoFile[];
@@ -29,6 +20,7 @@ interface Props {
   protoDirectories: ExpandedProtoDirectory[];
   selectedId?: string;
   handleSelect: SelectProtoFileHandler;
+  handleUnselect: SelectProtoFileHandler;
   handleDelete: DeleteProtoFileHandler;
   handleUpdate: UpdateProtoFileHandler;
   handleDeleteDirectory: DeleteProtoDirectoryHandler;
@@ -38,13 +30,15 @@ const recursiveRender = (
   indent: number,
   { dir, files, subDirs }: ExpandedProtoDirectory,
   handleSelect: SelectProtoFileHandler,
+  handleUnselect: SelectProtoFileHandler,
   handleUpdate: UpdateProtoFileHandler,
   handleDelete: DeleteProtoFileHandler,
   handleDeleteDirectory: DeleteProtoDirectoryHandler,
   selectedId?: string
 ): React.ReactNode => [
   dir && (
-    <ProtoListItem
+    <li
+      className='row-spaced'
       style={{
         paddingLeft: `${indent * 1}rem`,
       }}
@@ -68,14 +62,35 @@ const recursiveRender = (
           </Button>
         </div>
       )}
-    </ProtoListItem>
+    </li>
   ),
   ...files.map(f => (
-    <ProtoListItem
+    <li
+      className='row-spaced cursor-pointer'
       key={f._id}
       onClick={() => handleSelect(f._id)}
     >
       <>
+        <Checkbox
+          className="py-0"
+          isSelected={f._id === selectedId}
+          onChange={isSelected => {
+            if (isSelected) {
+              handleSelect(f._id);
+            } else {
+              handleUnselect(f._id);
+            }
+          }}
+        >
+          {({ isSelected }) => {
+            return <>
+              {isSelected ?
+                <i className="fa fa-square-check fa-1x h-4 mr-2" style={{ color: 'rgb(74 222 128)' }} /> :
+                <i className="fa fa-square fa-1x h-4 mr-2" />
+              }
+            </>;
+          }}
+        </Checkbox>
         <span className="wide">
           <i className="fa fa-file-o pad-right-sm" />
           {f.name}
@@ -105,13 +120,14 @@ const recursiveRender = (
           </Button>
         </div>
       </>
-    </ProtoListItem>
+    </li>
   )),
   ...subDirs.map(sd =>
     recursiveRender(
       indent + 1,
       sd,
       handleSelect,
+      handleUnselect,
       handleUpdate,
       handleDelete,
       handleDeleteDirectory,
@@ -130,6 +146,7 @@ export const ProtoFileList: FunctionComponent<Props> = props => (
         0,
         dir,
         props.handleSelect,
+        props.handleUnselect,
         props.handleUpdate,
         props.handleDelete,
         props.handleDeleteDirectory,

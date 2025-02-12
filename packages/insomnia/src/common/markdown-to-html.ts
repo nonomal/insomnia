@@ -6,8 +6,9 @@ marked.setOptions({
   gfm: true,
   breaks: false,
   pedantic: false,
-  smartLists: true,
   smartypants: false,
+  headerIds: false,
+  mangle: false,
 });
 
 export const markdownToHTML = (input: string) => dompurify.sanitize(marked.parse(input));

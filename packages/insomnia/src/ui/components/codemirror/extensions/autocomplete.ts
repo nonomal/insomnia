@@ -1,10 +1,10 @@
 import 'codemirror/addon/mode/overlay';
 
-import CodeMirror, { EnvironmentAutocompleteOptions, Hint, ShowHintOptions } from 'codemirror';
+import CodeMirror, { type EnvironmentAutocompleteOptions, type Hint, type ShowHintOptions } from 'codemirror';
 
 import { getPlatformKeyCombinations } from '../../../../common/hotkeys';
 import { escapeRegex, fnOrString, isNotNullOrUndefined } from '../../../../common/misc';
-import { getDefaultFill, NunjucksParsedTag } from '../../../../templating/utils';
+import { getDefaultFill, type NunjucksParsedTag } from '../../../../templating/utils';
 import { isNunjucksMode } from '../modes/nunjucks';
 
 const NAME_MATCH_FLEXIBLE = /[\w.\][\-/]+$/;
@@ -75,14 +75,11 @@ CodeMirror.defineOption('environmentAutocomplete', null, (cm: CodeMirror.Editor,
       return;
     }
 
-    let hintsContainer = document.querySelector<HTMLElement>('#hints-container');
+    const hintsContainer = document.querySelector<HTMLElement>('#hints-container');
 
     if (!hintsContainer) {
-      const el = document.createElement('div');
-      el.id = 'hints-container';
-      el.className = 'theme--dropdown__menu';
-      document.body.appendChild(el);
-      hintsContainer = el;
+      console.warn('Hints container not found');
+      throw new Error('Hints container not found');
     }
 
     const constants = options.getConstants ? await options.getConstants() : null;

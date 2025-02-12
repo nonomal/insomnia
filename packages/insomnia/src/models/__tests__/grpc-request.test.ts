@@ -1,13 +1,10 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, vi } from 'vitest';
 
-import { globalBeforeEach } from '../../__jest__/before-each';
 import * as models from '../index';
 
 describe('init()', () => {
-  beforeEach(globalBeforeEach);
-
   it('contains all required fields', async () => {
-    Date.now = jest.fn().mockReturnValue(1478795580200);
+    Date.now = vi.fn().mockReturnValue(1478795580200);
     expect(models.grpcRequest.init()).toEqual({
       url: '',
       name: 'New gRPC Request',
@@ -18,6 +15,12 @@ describe('init()', () => {
       body: {
         text: '{}',
       },
+      reflectionApi: {
+        enabled: false,
+        apiKey: '',
+        module: 'buf.build/connectrpc/eliza',
+        url: 'https://buf.build',
+      },
       metaSortKey: -1478795580200,
       isPrivate: false,
     });
@@ -25,10 +28,8 @@ describe('init()', () => {
 });
 
 describe('create()', () => {
-  beforeEach(globalBeforeEach);
-
   it('creates a valid GrpcRequest', async () => {
-    Date.now = jest.fn().mockReturnValue(1478795580200);
+    Date.now = vi.fn().mockReturnValue(1478795580200);
     const request = await models.grpcRequest.create({
       name: 'My request',
       parentId: 'fld_124',
@@ -47,6 +48,12 @@ describe('create()', () => {
       body: {
         text: '{}',
       },
+      reflectionApi: {
+        enabled: false,
+        apiKey: '',
+        module: 'buf.build/connectrpc/eliza',
+        url: 'https://buf.build',
+      },
       metaSortKey: -1478795580200,
       isPrivate: false,
       type: 'GrpcRequest',
@@ -56,7 +63,7 @@ describe('create()', () => {
   });
 
   it('fails when missing parentId', async () => {
-    Date.now = jest.fn().mockReturnValue(1478795580200);
+    Date.now = vi.fn().mockReturnValue(1478795580200);
     expect(() =>
       models.grpcRequest.create({
         name: 'no parentId',

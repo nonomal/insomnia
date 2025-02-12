@@ -5,18 +5,24 @@ export interface StringInfo {
 
 type StringId =
   | 'collection'
+  | 'mock'
   | 'document'
   | 'project'
   | 'workspace'
   | 'defaultProject'
   | 'localProject'
   | 'remoteProject'
+  | 'environment'
   ;
 
 export const strings: Record<StringId, StringInfo> = {
   collection: {
     singular: 'Collection',
     plural: 'Collections',
+  },
+  mock: {
+    singular: 'Mock',
+    plural: 'Mocks',
   },
   document: {
     singular: 'Document',
@@ -41,5 +47,9 @@ export const strings: Record<StringId, StringInfo> = {
   remoteProject: {
     singular: 'Remote',
     plural: 'Remote',
+  },
+  environment: {
+    singular: 'Environment',
+    plural: 'Environments',
   },
 };
